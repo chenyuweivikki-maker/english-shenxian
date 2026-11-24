@@ -1,4 +1,4 @@
-const VERSION = 'sx-v1';
+const VERSION = 'sx-v2';
 const BASE = new URL('./', self.location.href).pathname;
 const SHELL = [BASE, BASE + 'index.html', BASE + 'content.json', BASE + 'manifest.webmanifest'];
 
@@ -15,6 +15,12 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
+
+  // Netlify 免费版会注入右下角 hud 脚本；拦掉，保持界面干净
+  if (url.pathname.startsWith('/.netlify/scripts/hud')) {
+    e.respondWith(new Response('', { status: 200, headers: { 'content-type': 'application/javascript' } }));
+    return;
+  }
 
   // 音频/视频：缓存优先，听过的下次离线也能放
   if (url.pathname.startsWith(BASE + 'media/')) {
